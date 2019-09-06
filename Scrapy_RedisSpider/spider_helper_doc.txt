@@ -1,0 +1,272 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#-----------------------启动多个爬虫
+
+
+'''
+    如果已有爬虫在运行想在同一个进程中开启另一个Scrapy，建议您使用CrawlerRunner
+        注意，爬虫结束后需要手动关闭Twisted reactor，通过向CrawlerRunner.crawl方法返回的延迟添加回调来实现。
+
+
+'''
+
+from scrapy.crawler import CrawlerProcess
+from scrapy.utils.project import get_project_settings
+
+
+
+
+
+#------------------------todo CrawlerRunner 启动爬虫
+from twisted.internet import reactor
+import scrapy
+from scrapy.crawler import CrawlerRunner
+from scrapy.utils.log import configure_logging
+
+class MySpider(scrapy.Spider):
+    # Your spider definition
+    ...
+
+configure_logging({'LOG_FORMAT': '%(levelname)s: %(message)s'})
+runner = CrawlerRunner()
+
+# d = runner.crawl(MySpider)
+# d.addBoth(lambda _: reactor.stop())
+# reactor.run() # the script will block here until the crawling is finished
+#
+
+
+#---------------------todo CrawlerRunner    启动多个爬虫
+import scrapy
+from twisted.internet import reactor
+from scrapy.crawler import CrawlerRunner
+from scrapy.utils.log import configure_logging
+
+class MySpider1(scrapy.Spider):
+    # Your first spider definition
+    ...
+
+class MySpider2(scrapy.Spider):
+    # Your second spider definition
+    ...
+
+# configure_logging()
+# runner = CrawlerRunner()
+# runner.crawl(MySpider1)
+# runner.crawl(MySpider2)
+# d = runner.join()
+# d.addBoth(lambda _: reactor.stop())
+#
+# reactor.run() # the script will block here until all crawling jobs are finished
+
+
+#-----------------------------todo 异步运行爬虫
+from twisted.internet import reactor, defer
+from scrapy.crawler import CrawlerRunner
+from scrapy.utils.log import configure_logging
+
+class MySpider1(scrapy.Spider):
+    # Your first spider definition
+    ...
+
+class MySpider2(scrapy.Spider):
+    # Your second spider definition
+    ...
+
+# configure_logging()
+# runner = CrawlerRunner()
+
+@defer.inlineCallbacks
+def crawl():
+    yield runner.crawl(MySpider1)
+    yield runner.crawl(MySpider2)
+    reactor.stop()
+
+# crawl()
+# reactor.run() # the script will block here until the last crawl call is finished
+
+
+
+
+
+
+
+#----------------------todo CrawlerProcess 启动多个爬虫
+
+import scrapy
+from scrapy.crawler import CrawlerProcess
+
+class MySpider1(scrapy.Spider):
+    # Your first spider definition
+    ...
+
+class MySpider2(scrapy.Spider):
+    # Your second spider definition
+    ...
+
+# process = CrawlerProcess()
+# process.crawl(MySpider1)
+# process.crawl(MySpider2)
+# process.start() # the script will block here until all crawling jobs are finished
+#
+#
+
+#---------------------------------
+
+
+
+
+def parse(self, response):
+
+    # 一级数字
+    setp1_sum = response.xpath('//dd/a[@level="secondcat"]/@value').extract()[:-1]
+    setp1_link = response.xpath('//dd/a[@level="secondcat"]/@href').extract()[:-1]
+    # ['7', '1', '4', '8', '9', '5', '10']
+
+    # 二级数字
+    setp2_num =  response.xpath('//dl[@class="category secondcat"]/dd/a/@value').getall()
+    setp2_text =  response.xpath('//dl[@class="category secondcat"]/dd/a/text()').getall()
+    # ['7', '57', '58', '59', '55', '2990', '5075', '51', '54', '53', '50', '61']
+
+    # 三级数字
+    setp3_link = response.xpath('//dl[@class="category thirdcat"]/dd/a/@href').getall()
+    setp3_num = response.xpath('//dl[@class="category thirdcat"]/dd/a/@value').getall()
+    # ['50','987','947','4777','943','942','2246','970','980','948','975','944','939','4855','4911','972','2255','988','2268','2930','945','946','950','5037','989','3400','2266','2972','971']
+
+    # 四级品牌
+    setp4_txt = response.xpath('//dl[@class="searchbrandlevel"]/dd/a/text()').getall()[1:]
+    setp4_sum = response.xpath('//dl[@class="searchbrandlevel"]/dd/a/@value').getall()[1:]
+    # ['2729', '4636', '4635', '2730', '2731', '4630', '2732', '2733']
+
+    # 解析下一个页面    给解析回调给自己
+    more_id = max(response.xpath('//div[@class="num"]/text()').getall())  # 取最大的品牌id  如果变成1  就爬完了
+
+    # more_item_link ='https://www.maigoo.com/ajaxstream/loadblock/?str=brand:search_BrandPY:,catid:7-2729-0,num:10,page:5&append=1&t=1560247364485'
+    more_item_link ='https://www.maigoo.com/ajaxstream/loadblock/?str=brand:search_BrandPY:,catid:{catid}-{setp4_id}-0,num:10,page:5&append=1&t=1560247364485'
+    yield scrapy.Request(url=more_item_link.format(catid='', setp4_id='', page=''),
+                         callback=self.parse_next_more_page,
+                         dont_filter=True,
+                         meta={'first_page': ''})
+
+
+
+#---------------------------从导航页开始解析
+def parse2(self,response):
+    # -------------------抓取导航页的分类链接
+    item_loader = ItemLoader(item=MaiGooItem(), response=response)
+    # 导航页的chatid抓下来，对应的导航链接是https://www.maigoo.com/?action=getbelow&catid=5
+    catid = response.xpath('//div[@id="menubox"]//li/@catid').extract()
+    for index, navigation_id in enumerate(catid):
+        # 进入分类中的各个导航页面
+        navigation_name = response.xpath('//div[@id="menubox"]//li/a/text()').extract()[index]
+        navigation_link = 'https://www.maigoo.com/?action=getbelow&catid={id}'.format(id=navigation_id)
+
+        # --------解析出导航链接的子分类
+
+        item_loader.add_value('trademark_throng', navigation_name)
+        item_loader.add_value('trademark_address', navigation_link)
+
+        # 会将ressponse插入mongo后，返回Mongo_id，插入到mysql中
+        item_loader.add_value('mongo_id', json.dumps(response.text))
+
+        article_item = item_loader.load_item()
+        yield article_item
+
+
+    def classify_parse(self, response):
+        # 收集分类id输入大分类id   输出dict
+        # first_classify_txt = response.xpath('//dd/a[@level="secondcat"]/text()').extract()
+        # first_classify_num = response.xpath('//dd/a[@level="secondcat"]/@value').extract()
+        # two_classify_num = response.xpath('//dl[@class="category secondcat"]/dd/a/@value').getall()
+        # two_classify_txt = response.xpath('//dl[@class="category secondcat"]/dd/a/text()').getall()
+        # three_classify_num = response.xpath('//dl[@class="category thirdcat"]/dd/a/@value').getall()
+        # three_classify_txt = response.xpath('//dl[@class="category thirdcat"]/dd/a/text()').getall()
+        four_classify_num = response.xpath('//dl[@class="searchbrandlevel"]/dd/a/@value').getall()
+        four_classify_txt = response.xpath('//dl[@class="searchbrandlevel"]/dd/a/text()').getall()
+        # first_classify_num_clear = first_classify_num[:-1] if first_classify_num else {}
+        # two_classify_num_clear = two_classify_num[1:]     if two_classify_num   else {}
+        # three_classify_num_clear = three_classify_num[1:] if three_classify_num else {}
+        four_classify_num_clear = four_classify_num[1:]   if four_classify_num  else {}
+        # first_classify_txt_clear = first_classify_txt[:-1] if first_classify_txt else {}
+        # two_classify_txt_clear = two_classify_txt[1:]     if two_classify_txt else {}
+        # three_classify_txt_clear = three_classify_txt[1:] if three_classify_txt else {}
+        four_classify_txt_clear = four_classify_txt[1:]   if four_classify_txt else {}
+        # first_classify_dict = dict(zip(first_classify_num_clear, first_classify_txt_clear))
+        # two_classify_dict = dict(zip(two_classify_num_clear, two_classify_txt_clear))
+        # three_classify_dict = dict(zip(three_classify_num_clear, three_classify_txt_clear))
+        four_classify_dict = dict(zip(four_classify_num_clear, four_classify_txt_clear))
+        # self.classify_dict.update(first_classify_dict)
+        # self.classify_dict.update(two_classify_dict)
+        # self.classify_dict.update(three_classify_dict)
+        self.classify_dict.update(four_classify_dict)
+        return self.classify_dict
+
+
+
+
+
+
+#--------------------- todo 解析url可阅读
+def decode_url(url):
+    '''将url变成可以阅读'''
+    from urllib.parse import unquote
+    #url = 'https://www.maigoo.com/ajaxstream/loadblock/?str=brand%3Asearch_catid%3A54-2729%2Cnum%3A10%2Cpage%3A4&append=1&t=1560243935877'
+    ur = unquote(url)
+    print(ur)
+    return ur
+
+
+
+
+if __name__ == "__main__":
+    decode_url(
+                # 'https://www.maigoo.com/ajaxstream/loadblock/?str=brand%3Asearch_BrandPY%3A%2Ccatid%3A7-2729-0%2Cnum%3A10%2Cpage%3A4&append=1&t=1560247201654',
+                # 'https://www.maigoo.com/ajaxstream/loadblock/?str=brand%3Asearch_BrandPY%3A%2Ccatid%3A7-2729-0%2Cnum%3A10%2Cpage%3A6&append=1&t=1560248432720'
+                # 'https://www.maigoo.com/ajaxstream/loadblock/?str=brand%3Asearch_BrandPY%3A%2Ccatid%3A7-2729-0%2Cnum%3A10%2Cpage%3A3&append=1&t=1560322950926',
+                #'https://www.maigoo.com/ajaxstream/loadblock/?str=brand%3Asearch_catid%3A54-2729%2Cnum%3A10%2Cpage%3A4&append=1&t=1560243935877'
+                # 'https://www.maigoo.com/ajaxstream/loadblock/?str=brand%3Asearch_BrandPY%3A%2Ccatid%3A9-0-0%2Cnum%3A10%2Cpage%3A1&append=0&t=1560926684002'
+                # 'https://www.maigoo.com/ajaxstream/loadblock/?str=brand%3Asearch_BrandPY%3A%2Ccatid%3A1806-0-0%2Cnum%3A10%2Cpage%3A2&append=1&t=15609272071'
+                # 'https://www.maigoo.com/ajaxstream/loadblock/?str=brand%3Asearch_BrandPY%3A%2Ccatid%3A1042-0-0%2Cnum%3A10%2Cpage%3A2&append=1&t=1560927485863'
+                # 'https://www.maigoo.com/ajaxstream/loadblock/?str=brand%3Asearch_BrandPY%3A%2Ccatid%3A1042-4636-0%2Cnum%3A10%2Cpage%3A1&append=0&t=1560927584017'
+                # 'https://www.maigoo.com/ajaxstream/loadblock/?str=comment%3Acommentlist_id%3A1380%2Cblockid%3A3%2Cnum%3A3%2Cpage%3A2&append=1&t=1560927897136'
+                'https://www.maigoo.com/ajaxstream/loadblock/?str=comment%3Acommentlist_id%3A1382%2Cblockid%3A3%2Cnum%3A3%2Cpage%3A2&append=1&t=1560929137728'
+
+
+                )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
