@@ -7,12 +7,13 @@
 start = '*'*20
 
 
+
+
 import pymongo
 from Scrapy_RedisSpider.items import MaiGooItem,ZhaoShanItem,CompanyItems
 class MongoPipeline(object):
 
-    #mongo文件名
-    collection_name = 'qianjin_data_v2'
+
 
     def __init__(self, mongo_uri, mongo_db):
         self.mongo_uri      = mongo_uri
@@ -37,10 +38,6 @@ class MongoPipeline(object):
         mongo_id = str(res.inserted_id)
         # 将response替换成Mongo id,添加到item中，后面插入mysql
         item._values['mongo_id'] = mongo_id
-        item._values['contents'] = mongo_id
-        item._values['content'] = mongo_id
-        item._values['advantage'] = mongo_id
-        item._values['process'] = mongo_id
         print(start,'insert mongo id {} ok.'.format(mongo_id))
         return item
 
@@ -69,7 +66,6 @@ class MongoPipeline(object):
                 mongo_id = str(res.inserted_id)
                 item._values['mongo_id'] = mongo_id
                 item._values['contents'] = mongo_id
-
             except Exception as e:
                 print(e)
         #----------------企业数据
@@ -96,9 +92,9 @@ class MongoPipeline(object):
 
 # -----------------------------------todo pipeline 异步插入mysql
 from pymysql import IntegrityError
-
 import pymysql
 from twisted.enterprise import adbapi
+
 class MysqlTwistedPipeline(object):
 
     def __init__(self, dbpool):
@@ -173,6 +169,7 @@ class MysqlTwistedPipeline(object):
 
             alter table f_model_word add unique index(order_number,idcard);
         '''
+        
         error_list = []
         try:
             if isinstance(item, list):
@@ -220,3 +217,16 @@ class MysqlTwistedPipeline(object):
 class PpRedisspiderPipeline(object):
     def process_item(self, item, spider):
         return item
+
+
+
+
+
+
+
+
+
+
+
+
+

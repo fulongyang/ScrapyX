@@ -12,6 +12,57 @@
 
 
 
+#################################################重要配置
+
+#-------------------阿布云代理配置
+ABY_PROXY_USER= ''
+ABY_PROXY_PASS= ''
+ABY_PROXY_PORT= ''
+ABY_PROXY_HOST= ''
+
+
+#-------------------mysql配置
+MYSQL_SETTING = {
+   'MYSQL_HOST':'',
+   'MYSQL_DBNAME':'',
+   'MYSQL_USER':'',
+   'MYSQL_PASSWORD':'',
+   'MYSQL_PORT':'',
+   'MYSQL_CHARSET':'',
+}
+
+
+#---------------------mongo配置
+MONGO_SETTING = {
+   'MONGO_URI':'',
+   'MONGO_DATABASE':'',
+}
+
+
+#----------------------redis配置
+REDIS_SETTING={
+'REDIS_HOST':'',
+'REDIS_PORT':'',
+}
+
+
+
+#设置获取cookie的url
+QICHACHA_COOKIES_URL = None
+COOKIES_POOL_URL = None
+
+
+#----------获取代理ip的url
+QICHACHA_GET_IP_URL = "http://127.0.0.1:5010/get/" if False else None  #有接口代理请打开
+QICHACHA_DELETE_IP_URL = "http://127.0.0.1:5010/delete/?proxy={}"
+
+
+
+###################################################################
+
+
+
+
 
 
 BOT_NAME = 'Scrapy_RedisSpider'
@@ -91,7 +142,6 @@ ITEM_PIPELINES = {
 }
 
 
-
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://doc.scrapy.org/en/latest/topics/autothrottle.html
 #AUTOTHROTTLE_ENABLED = True
@@ -116,29 +166,22 @@ ITEM_PIPELINES = {
 
 
 
-#--------------todo   mysql参数配置
-MYSQL_HOST           = '----mysql host---'
-MYSQL_DBNAME         = 'spider_data'                    #数据库名字，请修改
-MYSQL_USER           = 'root'                           #数据库账号，请修改
-MYSQL_PASSWORD       = '----mysql password ---'         #数据库密码，请修改
-MYSQL_PORT           = 4002                             #数据库端口
-MYSQL_CHARSET        = 'utf8'                           #数据库默认编码，别修改
-# MYSQL_TABLE          = ''        #
-# MYSQL_TABLE          = ''        #
+
+#--------------todo   mysql配置
+MYSQL_HOST           = MYSQL_SETTING['MYSQL_HOST']
+MYSQL_DBNAME         = MYSQL_SETTING['MYSQL_DBNAME']                    #数据库名字，请修改
+MYSQL_USER           = MYSQL_SETTING['MYSQL_USER']                          #数据库账号，请修改
+MYSQL_PASSWORD       = MYSQL_SETTING['MYSQL_PASSWORD']         #数据库密码，请修改
+MYSQL_PORT           = MYSQL_SETTING['MYSQL_PORT']                            #数据库端口
+MYSQL_CHARSET        = MYSQL_SETTING['MYSQL_CHARSET']                           #数据库默认编码，别修改
 
 
 
 
-#---------------------todo  mongo参数配置
-#------------------自己的mongo
-# MONGO_URI               ='**'
-# MONGO_DATABASE          ='test'
-# MONGO_TABLE             ='pp_data'
 
-#--------------------docker mongo
-MONGO_URI               ='----mongo host:port---'  #mongo host
-MONGO_DATABASE          ='pp_data'
-# MONGO_TABLE             ='pp_data'
+#---------------------todo  mongo配置
+MONGO_URI               =MONGO_SETTING['MONGO_URI']
+MONGO_DATABASE          =MONGO_SETTING['MONGO_DATABASE']
 
 
 
@@ -198,8 +241,8 @@ SCHEDULER_QUEUE_CLASS = 'scrapy_redis.queue.FifoQueue'
 #后进先出队列：
 #SCHEDULER_QUEUE_CLASS = 'scrapy_redis.queue.LifoQueue'
 
-REDIS_HOST              = 'redis host'
-REDIS_PORT              = 6379
+REDIS_HOST              = REDIS_SETTING['REDIS_HOST']
+REDIS_PORT              = REDIS_SETTING['REDIS_PORT']
 
 # REDIS_URL = 'redis://user:pass@hostname:9001'
 REDIS_ENCODING          = 'utf-8'
@@ -209,9 +252,6 @@ REDIS_ITEMS_KEY         = '%(spider)s:items'
 
 DOWNLOADER_CLIENTCONTEXTFACTORY = 'Scrapy_RedisSpider.context.CustomContextFactory'
 
-
-
-#-----------起始页面不重复
 
 
 
@@ -247,7 +287,6 @@ DOWNLOAD_DELAY =0
 REDIRECT_ENALBED =False
 
 #-------------------cookie 设置
-
 # settings文件中给Cookies_enabled=False解注释
 # settings的headers配置的cookie就可以用了
 # COOKIES_ENABLED = False
@@ -272,23 +311,24 @@ yield scrapy.Request(url,dont_filter=True,cookies={自己的cookie})
 '''
 
 
+#------------------------------------------账号密码基础配置---------------------------------------------------------------
 
 
-#设置获取cookie的url
-QICHACHA_COOKIES_URL = None
-COOKIES_POOL_URL = None
 
 
-#----------获取代理ip的url
-QICHACHA_GET_IP_URL = "http://127.0.0.1:5010/get/" if False else None  #有接口代理请打开
-QICHACHA_DELETE_IP_URL = "http://127.0.0.1:5010/delete/?proxy={}"
 
 
-#-------------阿布云代理配置
-ABY_PROXY_USER= ''
-ABY_PROXY_PASS= ''
-ABY_PROXY_PORT= ''
-ABY_PROXY_HOST= ''
+
+
+
+
+
+
+
+
+
+
+
 
 
 

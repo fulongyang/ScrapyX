@@ -64,23 +64,20 @@ class CookieMiddleware(RetryMiddleware):
                 # Cookies还能继续使用，针对账号进行的反爬虫。
                 # self.logging.info('当前Cookie无法使用，需要认证。')
                 pass
-
             # 如果出现重定向，说明此次请求失败，继续获取一个新的Cookie，重新对此次请求request进行访问。
-
             # 返回值request: 停止后续的response中间件，而是将request重新放入调度器的队列中重新请求。
+            
         print(star,response.status)
         if self.inspect_startcontext(response.text):
             log.msg('*'*10+'没有拿到正确页面', level=log.INFO)
-
-
             #----------重试请求
             retry_req = request.copy()
             retry_req.dont_filter = True  # 必须设置(禁止重复请求被过滤掉)
             retry_req.priority = request.priority + self.priority_adjust
             return retry_req or response
-
         # 如果没有出现重定向，直接将response向下传递后续的中间件。
         return response
+
 
     def inspect_startcontext(self, context):
         '检测内容是否正确'

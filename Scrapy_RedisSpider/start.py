@@ -9,8 +9,18 @@ import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 
+
+
+
+#---------------------todo  百度企业爬虫
+# os.system('scrapy crawl BaiduCompanySpider')
+execute(['scrapy','crawl','BaiduCompanySpider'])
+
+
 #------------------todo 企查查
-execute(['scrapy','crawl','QichachaSpider'])
+# execute(['scrapy','crawl','QichachaSpider'])
+
+
 
 '''
 lpush QichachaSpider:QichachaSpiderQueue https://www.qichacha.com/search?key=河南龙佰智能装备制造有限公司                                
