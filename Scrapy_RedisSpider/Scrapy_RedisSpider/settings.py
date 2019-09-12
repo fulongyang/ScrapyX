@@ -15,6 +15,8 @@
 #################################################重要配置
 
 #-------------------阿布云代理配置
+
+
 ABY_PROXY_USER= ''
 ABY_PROXY_PASS= ''
 ABY_PROXY_PORT= ''
@@ -53,7 +55,7 @@ COOKIES_POOL_URL = None
 
 
 #----------获取代理ip的url
-QICHACHA_GET_IP_URL = "http://127.0.0.1:5010/get/" if False else None  #有接口代理请打开
+QICHACHA_GET_IP_URL = "http://127.0.0.1:5010/get/" if True else None  #有接口代理请打开
 QICHACHA_DELETE_IP_URL = "http://127.0.0.1:5010/delete/?proxy={}"
 
 
@@ -97,7 +99,7 @@ ROBOTSTXT_OBEY = False
 # Override the default request headers:
 DEFAULT_REQUEST_HEADERS = {
 # 'Cookie':'UM_distinctid=16b07a5410188e-0370fbffdd06af-e353165-1fa400-16b07a54102adc; _uab_collina=155920140075412409340845; zg_did=%7B%22did%22%3A%20%2216b07a54a2ab69-020cbf4311ac2d-e353165-1fa400-16b07a54a2ba8a%22%7D; QCCSESSID=v0k6bn3k9kdo2m43o78k9pd201; acw_tc=2ff63b9615652582308674094e6d18b912a4b24b3a07d85f12fbfe420f; Hm_lvt_3456bee468c83cc63fb5147f119f1075=1565258235,1565260494; CNZZDATA1254842228=1599181038-1559200185-%7C1565688721; zg_de1d1a35bfa24ce29bbf2c7eb17e6c4f=%7B%22sid%22%3A%201565685400676%2C%22updated%22%3A%201565689890936%2C%22info%22%3A%201565258232518%2C%22superProperty%22%3A%20%22%7B%7D%22%2C%22platform%22%3A%20%22%7B%7D%22%2C%22utm%22%3A%20%22%7B%7D%22%2C%22referrerDomain%22%3A%20%22%22%7D; Hm_lpvt_3456bee468c83cc63fb5147f119f1075=1565689892',
-# 'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36',
+'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36',
 }
 
 #------------------设置true使用 middlewares 的cookies 有效
@@ -136,8 +138,8 @@ DOWNLOADER_MIDDLEWARES = {
 
 
 ITEM_PIPELINES = {
-   'Scrapy_RedisSpider.pipelines.MongoPipeline': 501,
-   'Scrapy_RedisSpider.pipelines.MysqlTwistedPipeline': 505,
+   'Scrapy_RedisSpider.pipelines.MongoPipeline': None,
+   'Scrapy_RedisSpider.pipelines.MysqlTwistedPipeline': None,
 
 }
 
@@ -178,7 +180,6 @@ MYSQL_CHARSET        = MYSQL_SETTING['MYSQL_CHARSET']                           
 
 
 
-
 #---------------------todo  mongo配置
 MONGO_URI               =MONGO_SETTING['MONGO_URI']
 MONGO_DATABASE          =MONGO_SETTING['MONGO_DATABASE']
@@ -214,7 +215,7 @@ REACTOR_THREADPOOL_MAXSIZE          = 10
 
 
 
-#---------------todo redis
+#-----------------------------------------todo redis
 # 设置重启爬虫时是否清空爬取队列
 # 这样每次重启爬虫都会清空指纹和请求队列,一般设置为False
 # SCHEDULER_FLUSH_ON_START=True
@@ -224,34 +225,34 @@ REACTOR_THREADPOOL_MAXSIZE          = 10
 
 
 # 过滤器
-DUPEFILTER_CLASS        = "scrapy_redis.dupefilter.RFPDupeFilter"
-
-# # 调度器
-SCHEDULER               = "scrapy_redis.scheduler.Scheduler"
-
-# # 调度状态持久化设置为为True则不会清空redis里的dupefilter和requests队列
-SCHEDULER_PERSIST       = True
-# SCHEDULER_PERSIST       = False
-
-
-# 请求调度使用优先队列
-# SCHEDULER_QUEUE_CLASS   = 'scrapy_redis.queue.SpiderPriorityQueue'
-#先进先出队列：
-SCHEDULER_QUEUE_CLASS = 'scrapy_redis.queue.FifoQueue'
-#后进先出队列：
-#SCHEDULER_QUEUE_CLASS = 'scrapy_redis.queue.LifoQueue'
-
-REDIS_HOST              = REDIS_SETTING['REDIS_HOST']
-REDIS_PORT              = REDIS_SETTING['REDIS_PORT']
-
-# REDIS_URL = 'redis://user:pass@hostname:9001'
-REDIS_ENCODING          = 'utf-8'
-
-# The item pipeline serializes and stores the items in this redis key.
-REDIS_ITEMS_KEY         = '%(spider)s:items'
-
-DOWNLOADER_CLIENTCONTEXTFACTORY = 'Scrapy_RedisSpider.context.CustomContextFactory'
-
+# DUPEFILTER_CLASS        = "scrapy_redis.dupefilter.RFPDupeFilter"
+#
+# # # 调度器
+# SCHEDULER               = "scrapy_redis.scheduler.Scheduler"
+#
+# # # 调度状态持久化设置为为True则不会清空redis里的dupefilter和requests队列
+# SCHEDULER_PERSIST       = True
+# # SCHEDULER_PERSIST       = False
+#
+#
+# # 请求调度使用优先队列
+# # SCHEDULER_QUEUE_CLASS   = 'scrapy_redis.queue.SpiderPriorityQueue'
+# #先进先出队列：
+# SCHEDULER_QUEUE_CLASS = 'scrapy_redis.queue.FifoQueue'
+# #后进先出队列：
+# #SCHEDULER_QUEUE_CLASS = 'scrapy_redis.queue.LifoQueue'
+#
+# REDIS_HOST              = REDIS_SETTING['REDIS_HOST']
+# REDIS_PORT              = REDIS_SETTING['REDIS_PORT']
+#
+# # REDIS_URL = 'redis://user:pass@hostname:9001'
+# REDIS_ENCODING          = 'utf-8'
+#
+# # The item pipeline serializes and stores the items in this redis key.
+# REDIS_ITEMS_KEY         = '%(spider)s:items'
+#
+# DOWNLOADER_CLIENTCONTEXTFACTORY = 'Scrapy_RedisSpider.context.CustomContextFactory'
+#
 
 
 

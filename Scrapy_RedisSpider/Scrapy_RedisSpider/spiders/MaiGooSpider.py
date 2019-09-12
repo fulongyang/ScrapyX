@@ -7,10 +7,15 @@ import scrapy
 from scrapy_redis.spiders import RedisSpider
 
 from scrapy.loader import ItemLoader
-from Scrapy_RedisSpider.items import MaiGooItem,UploadOSS
+from Scrapy_RedisSpider.items import MaiGooItem
+
+
 from Scrapy_RedisSpider.items import get_trademard_fid_id_fid_name,get_region_name_id
 
 from urllib.parse import unquote
+
+from helper import UploadOSS
+
 set_url = {}
 import threading
 

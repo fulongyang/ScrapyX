@@ -9,19 +9,35 @@ setting = get_project_settings()
 
 
 
+
+#------------获取解析规则
+class GetParseRule():
+
+
+    def get_mysql_rule(self,conn):
+        cursor = conn.cursor()
+        get_rule_sql = "select * from PlutonianRule order by id desc;"
+        result_rule_sql = cursor.execute(get_rule_sql).fetchall()
+        yield from result_rule_sql
+
+
+
+
+
+
 class GetAPIProxy():
     '''接口获取代理
         参考 :https://github.com/fulongyang/proxy_pool
     '''
     @classmethod
-    def get_proxy(cls):
+    def get_proxy(cls,url):
         '''获取代理ip'''
-        return requests.get(setting.QICHACHA_GET_IP_URL).json()
+        return requests.get(url).json()
 
     @classmethod
-    def delete_proxy(cls,proxy):
+    def delete_proxy(cls,url,proxy):
         '''删除代理ip'''
-        requests.get(setting.QICHACHA_DELETE_IP_URL.format(proxy))
+        requests.get(url.format(proxy))
 
 
 
@@ -38,6 +54,15 @@ class ABYProxy():
         request.headers["Proxy-Authorization"] = proxyAuth
         # request.headers["Proxy-Switch-Ip"] = 'yes'
         print('*' * 20, '使用阿布云代理', request.meta['proxy'])
+
+
+
+
+
+class UploadOSS():
+
+    def __init__(self):
+        self.start = '*'*20
 
 
 

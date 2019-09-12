@@ -10,11 +10,14 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 
 
+#-------------------todo 3158加盟网
+execute(['scrapy','crawl','JX_3158_Spider'])
+
 
 
 #---------------------todo  百度企业爬虫
 # os.system('scrapy crawl BaiduCompanySpider')
-execute(['scrapy','crawl','BaiduCompanySpider'])
+# execute(['scrapy','crawl','BaiduCompanySpider'])
 
 
 #------------------todo 企查查

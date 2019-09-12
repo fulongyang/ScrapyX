@@ -66,7 +66,7 @@ class CookieMiddleware(RetryMiddleware):
                 pass
             # 如果出现重定向，说明此次请求失败，继续获取一个新的Cookie，重新对此次请求request进行访问。
             # 返回值request: 停止后续的response中间件，而是将request重新放入调度器的队列中重新请求。
-            
+
         print(star,response.status)
         if self.inspect_startcontext(response.text):
             log.msg('*'*10+'没有拿到正确页面', level=log.INFO)
@@ -155,22 +155,24 @@ async def get_web_cookie(url):
 #--------请求头
 class RandomUserAgent(GetMysqlV3,UserAgentMiddleware):
 
-    def __init__(self,user_agent,*args,**kwargs):
-        super().__init__(*args,**kwargs)
+    def __init__(self, user_agent, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.user_agent = user_agent
 
     def process_request(self, request, spider):
 
         # --------根据数据库去重
-        from urllib.parse import unquote
-        url_link = unquote(request.url)
-        _company_name = url_link.split('=')[-1:][0]
-        inspect_sql = "select Id,company_name from pp_company_info where company_name='{}' limit 1;".format(
-            _company_name)
-        inspect_result = self.get_mysql_one(inspect_sql)
-        if inspect_result:
-            print('*' * 20, 'this company have in db ....', inspect_result.get('company_name', ''))
-            raise IgnoreRequest
+        if spider.name =='QichachaSpider':
+            if setting['MYSQL_SETTING']['MYSQL_HOST']:
+                from urllib.parse import unquote
+                url_link = unquote(request.url)
+                _company_name = url_link.split('=')[-1:][0]
+                inspect_sql = "select Id,company_name from pp_company_info where company_name='{}' limit 1;".format(
+                    _company_name)
+                inspect_result = self.get_mysql_one(inspect_sql)
+                if inspect_result:
+                    print('*' * 20, 'this company have in db ....', inspect_result.get('company_name', ''))
+                    raise IgnoreRequest
 
 
         #从列表中随机抽选出一个ua值
@@ -180,8 +182,10 @@ class RandomUserAgent(GetMysqlV3,UserAgentMiddleware):
         request.headers.setdefault('User-Agent',ua)
         return None
 
+
     def process_response(self, request, response, spider):
         return response
+
 
     def process_exception(self, request, exception, spider):
         pass
@@ -219,9 +223,10 @@ class RandomProxyMiddleware(RetryMiddleware):
 
         #-------------使用接口代理
         elif setting['QICHACHA_GET_IP_URL']:
-            proxy_pool_ip = GetAPIProxy.get_proxy().get('proxy')
+            proxy_pool_ip = GetAPIProxy.get_proxy(setting['QICHACHA_GET_IP_URL']).get('proxy')
             request.meta['proxy'] = 'http://{}'.format(proxy_pool_ip)
             print('*' * 20, '使用proxyPool',request.meta['proxy'])
+
         elif select_proxy:
             url = 'http://proxy.1again.cc:35050/api/v1/proxy/?https=1'
             headers = {
@@ -297,7 +302,7 @@ class RandomProxyMiddleware(RetryMiddleware):
         if exception.args  and 'Could not open ' in exception.args[0]:
             print('*'*20,'error',exception.args[0])
             find_proxy_ip = request.meta['proxy'][7:]
-            GetAPIProxy().delete_proxy(find_proxy_ip)
+            GetAPIProxy().delete_proxy(url=setting['QICHACHA_DELETE_IP_URL'],proxy=find_proxy_ip)
             print('*' * 20, 'delete ip ok', find_proxy_ip)
             try_code = 1
 

@@ -105,10 +105,13 @@ class CompanyItems(scrapy.Item):
         locals()[k] = scrapy.Field()
 
 
+
+    
+
 #----------------------招商字段
 class ZhaoShanItem(scrapy.Item):
 
-    zhaoshang_dict_word = {
+    zhaoshang_dict_word01 = {
         'title':'品牌名稱',
         'spider_url':'爬取网站',
         'region':'省份',
@@ -151,8 +154,35 @@ class ZhaoShanItem(scrapy.Item):
         'url':'网站url',
     }
 
+    # ---------------------请求接口参数
+    zhaoshang_dict_word02 = {
+        'time': 'string请求时间戳',
+        'title': 'string招商标题',
+        'feeid': 'string加盟费用',
+        'thumb': 'string 	缩略图远程地址',
+        'keyword': 'string 	关键字',
+        'description': 'string 	招商描述',
+        'slideshow': 'array 	轮播图片远程地址',
+        'region': 'int 	地区',
+        'author': 'string 	作者',
+        'count ': 'int 	浏览量',
+        'pp_cid': 'string 	分类ID ',
+        'manage': 'string 	经营产品',
+        'pattern': 'string 	经营模式',
+        'source': 'string 	品牌源地',
+        'shopnum': 'int 	店铺数量',
+        'jiamengnum': 'int 	加盟人数',
+        'content': 'string 	加盟详情',
+        'advantage': 'string 	加盟优势',
+        'analysis': 'string 	加盟费分析',
+        'conditions': 'string 	加盟条件',
+        'process': 'string 	加盟流程',
+        'picture': 'array 	产品图片远程地址',
+
+    }
+
     #----------动态赋值2   实现成功
-    for k,v in zhaoshang_dict_word.items():
+    for k,v in zhaoshang_dict_word02.items():
         locals()[k] = scrapy.Field()
 
     @property
@@ -299,7 +329,8 @@ def get_region_name_id(key):
 
 def _get_key_value(table_name):
     '''取出对照表中的键值对'''
-
+    if not setting["MYSQL_HOST"]:
+        return None
     conn = pymysql.connect(host=setting["MYSQL_HOST"], db=setting['MYSQL_DBNAME'],
                            user=setting['MYSQL_USER'], password=setting['MYSQL_PASSWORD']
                            , charset='utf8', )
@@ -307,7 +338,8 @@ def _get_key_value(table_name):
     sql = "select key_value_json from {} order by id desc limit 1;".format(table_name)
     cursor.execute(sql)
     df = cursor.fetchone()[0]
-    return eval(df)
+    result = eval(df)
+    return result
 
 
 table_name = 'key_value_table'
@@ -469,10 +501,12 @@ class GetMysql():
 class GetMysqlV3():
 
     def __init__(self):
-        self.conn = pymysql.Connect(host=setting["MYSQL_HOST"], db=setting['MYSQL_DBNAME'],
-                               user=setting['MYSQL_USER'], password=setting['MYSQL_PASSWORD']
-                               , charset='utf8', cursorclass=pymysql.cursors.DictCursor)
-        self.cursor = self.conn.cursor()
+        exists_ = setting['MYSQL_SETTING']["MYSQL_HOST"]
+        if exists_:
+            self.conn = pymysql.Connect(host=exists_["MYSQL_HOST"], db=exists_['MYSQL_DBNAME'],
+                                   user=exists_['MYSQL_USER'], password=exists_['MYSQL_PASSWORD']
+                                   , charset='utf8', cursorclass=pymysql.cursors.DictCursor)
+            self.cursor = self.conn.cursor()
 
     #查
     def get_mysql_one(self,sql):
@@ -778,6 +812,8 @@ class AlterClassify():
             return region_data
         except AttributeError as e:
             print(e)
+
+
 
 
 if __name__ == "__main__":
